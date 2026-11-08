@@ -3,8 +3,12 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 
+import typer
+
 MAX_TITLE_LENGTH = 50
 MAX_CONTENT_LENGTH = 1000
+
+app = typer.Typer()
 
 
 @dataclass
@@ -36,10 +40,24 @@ def load_entries(db_path: Path) -> list[JournalEntry]:
 
 
 def add_entry(title: str, content: str, tags: list[str], db_path: Path) -> None:
-    entries = load_entries(db_path)  # load existing first
+    entries = load_entries(db_path)
     entry = JournalEntry(title=title, content=content, tags=tags)
     entries.append(entry)  # append, don't overwrite
     save_entries(entries, db_path)
+
+
+@app.command()
+def add(
+    title: str = typer.Option("", prompt="Title", show_default=False),
+    content: str = typer.Option("", prompt="Content", show_default=False),
+    tags: str = typer.Option("", prompt="Tags", show_default=False),
+    db_path: Path = typer.Option(Path("journal.json"), hidden=True),
+) -> None:
+    tag_list = tags.split(",")
+    try:
+        add_entry(title, content, tag_list, db_path)
+    except ValueError as e:
+        raise typer.BadParameter(str(e)) from e
 
 
 def main():
@@ -47,4 +65,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    app()
