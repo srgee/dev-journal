@@ -56,8 +56,23 @@ def add(
     tag_list = tags.split(",")
     try:
         add_entry(title, content, tag_list, db_path)
+        print("✔ Entry saved successfully!")
     except ValueError as e:
         raise typer.BadParameter(str(e)) from e
+
+
+@app.command("list")
+def list_entries(db_path: Path = typer.Option(Path("journal.json"), hidden=True)) -> None:
+    entries = load_entries(db_path)
+    if len(entries) == 0:
+        print("No entries found.")
+        return
+    for entry in entries:
+        print(f"Title: {entry.title}")
+        print(f"Content: {entry.content}")
+        print(f"Tags: {', '.join(entry.tags)}")
+        print(f"Date: {entry.date}")
+        print("---")
 
 
 def main():
