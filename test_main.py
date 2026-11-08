@@ -2,12 +2,14 @@ import json
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
 from main import (
     MAX_CONTENT_LENGTH,
     MAX_TITLE_LENGTH,
     JournalEntry,
     add_entry,
+    app,
     load_entries,
     save_entries,
 )
@@ -18,6 +20,11 @@ def db_file(tmp_path):
     path = tmp_path / "journal.json"
     path.touch()
     return path
+
+
+@pytest.fixture
+def runner():
+    return CliRunner()
 
 
 def test_create_valid_entry():
@@ -80,3 +87,45 @@ def test_add_multiple_entries(db_file):
     assert len(entries) == 2
     assert entries[0].title == "First"
     assert entries[1].title == "Second"
+
+
+def test_cli_add_with_flags(db_file, runner):
+    result = runner.invoke(
+        app,
+        [
+            "add",
+            "--title",
+            "CLI Entry",
+            "--content",
+            "Added via CLI",
+            "--tags",
+            "python, cli",
+            "--db-path",
+            str(db_file),
+        ],
+    )
+    assert result.exit_code == 0
+    assert "Entry saved" in result.output
+
+
+def test_cli_add_invalid_title(db_file, runner):
+    result = runner.invoke(
+        app,
+        ["add", "--title", "", "--content", "Valid content", "--tags", "", "--db-path", str(db_file)],
+    )
+    assert result.exit_code != 0
+
+
+def test_cli_list_entries(db_file, runner):
+    add_entry("Entry One", "Content 1", ["tag1"], db_file)
+    add_entry("Entry Two", "Content 2", ["tag2"], db_file)
+    result = runner.invoke(app, ["list", "--db-path", str(db_file)])
+    assert result.exit_code == 0
+    assert "Entry One" in result.output
+    assert "Entry Two" in result.output
+
+
+def test_cli_list_empty(db_file, runner):
+    result = runner.invoke(app, ["list", "--db-path", str(db_file)])
+    assert result.exit_code == 0
+    assert "no" in result.output.lower()
