@@ -35,6 +35,13 @@ def load_entries(db_path: Path) -> list[JournalEntry]:
     return [JournalEntry(**e) for e in data]
 
 
+def add_entry(title: str, content: str, tags: list[str], db_path: Path) -> None:
+    entries = load_entries(db_path)  # load existing first
+    entry = JournalEntry(title=title, content=content, tags=tags)
+    entries.append(entry)  # append, don't overwrite
+    save_entries(entries, db_path)
+
+
 def main():
     print("Hello from dev-journal!")
 
