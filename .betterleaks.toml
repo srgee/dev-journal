@@ -1,0 +1,34 @@
+title = "Project-Wide Betterleaks Configuration"
+
+[extend]
+useDefault = true
+
+# Optional:
+# disabledRules = ["generic-api-key"]
+
+[[rules]]
+id = "custom-api-token"
+
+description = "Detect custom API tokens"
+
+regex = '''MYTOKEN_[A-Za-z0-9]{32}'''
+
+keywords = [
+  "MYTOKEN_"
+]
+
+[allowlist]
+
+description = "Ignore test fixtures"
+
+paths = [
+  '''(^|/)testdata/''',
+  '''(^|/)fixtures/''',
+  '''(^|/)__mocks__/'''
+]
+
+stopwords = [
+  "dummy_token",
+  "example_secret",
+  "test_api_key"
+]
