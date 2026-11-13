@@ -1,0 +1,55 @@
+# =============================================================================
+#  DEPENDABOT — keeping dependencies up-to-date via automated PRs
+# =============================================================================
+#  CI complement: Dependabot opens PRs (one weekly grouped PR + security ones
+#  instantly) and each PR is validated against .github/workflows/ci.yml.
+#  With repo auto-merge enabled, a Dependabot PR with all checks green
+#  merges automatically via squash: your CI acts as the reviewer.
+#
+#  Remember to also enable under Settings -> Code security and analysis:
+#  "Dependabot alerts" and "Dependabot security updates". Security PRs
+#  are created instantly when a CVE is published (without waiting for the weekly
+#  schedule) and are NOT grouped: 1 CVE = 1 PR = clean revert if anything breaks.
+# =============================================================================
+version: 2
+
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "chore"
+      include: "scope"   # -> "chore(deps): bump ...", following Conventional Commits
+    groups:
+      # Group minor+patch in a single PR (weekly). Majors are NOT grouped: they are reviewed individually
+      # due to the potential for breaking changes.
+      python-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      actions-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
