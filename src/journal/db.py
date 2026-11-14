@@ -24,3 +24,16 @@ class JournalDatabse:
         entries = self.load_entries()
         entries.append(JournalEntry(title=title, content=content, tags=tags))
         self.save_entries(entries)
+
+    @staticmethod
+    def search_entries(entries: list[JournalEntry], query: str, titles_only: bool = False) -> list[JournalEntry]:
+        result = []
+        for e in entries:
+            if titles_only and query.lower() in e.title.lower():
+                result.append(e)
+                continue
+            if query.lower() in e.content:
+                result.append(e)
+            if any(query.lower() in tag.lower() for tag in e.tags):
+                result.append(e)
+        return result
