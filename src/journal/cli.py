@@ -26,7 +26,7 @@ def add(
     tag_list = tags.split(",")
     db = JournalDatabase(db_path)
     try:
-        db.add_entry(title, content, tag_list, db_path)
+        db.add_entry(title, content, tag_list)
         print("✔ Entry saved successfully!")
     except ValueError as e:
         raise typer.BadParameter(str(e)) from e
