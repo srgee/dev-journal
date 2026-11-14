@@ -12,5 +12,5 @@ def db_file(tmp_path):
 
 
 @pytest.fixture
-def db(db_file):  # fixtures can depend on other fixtures
+def db(db_file):
     return JournalDatabase(db_file)
