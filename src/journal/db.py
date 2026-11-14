@@ -5,7 +5,7 @@ from pathlib import Path
 from .models import JournalEntry
 
 
-class JournalDatabse:
+class JournalDatabase:
     def __init__(self, db_path: Path):
         self.db_path = db_path
 
