@@ -20,9 +20,13 @@ class JournalEntry:
 
     def __post_init__(self):
         if not self.title or len(self.title) > MAX_TITLE_LENGTH:
-            raise ValueError(f"Title must be non-empty and <= {MAX_TITLE_LENGTH} characters")
+            raise ValueError(
+                f"Title must be non-empty and <= {MAX_TITLE_LENGTH} characters"
+            )
         if not self.content or len(self.content) > MAX_CONTENT_LENGTH:
-            raise ValueError(f"Content must be non-empty and <= {MAX_CONTENT_LENGTH} characters")
+            raise ValueError(
+                f"Content must be non-empty and <= {MAX_CONTENT_LENGTH} characters"
+            )
 
 
 def save_entries(entries: list[JournalEntry], db_path: Path) -> None:
@@ -46,6 +50,22 @@ def add_entry(title: str, content: str, tags: list[str], db_path: Path) -> None:
     save_entries(entries, db_path)
 
 
+def match_query(entry: JournalEntry, query: str) -> bool:
+    return (
+        query.lower() in entry.title.lower()
+        or query.lower() in entry.content.lower()
+        or any(query.lower() in tag.lower() for tag in entry.tags)
+    )
+
+
+def _display(entry: JournalEntry) -> None:
+    print(f"Title: {entry.title}")
+    print(f"Content: {entry.content}")
+    print(f"Tags: {', '.join(entry.tags)}")
+    print(f"Date: {entry.date}")
+    print("---")
+
+
 @app.command()
 def add(
     title: str = typer.Option("", prompt="Title", show_default=False),
@@ -62,21 +82,43 @@ def add(
 
 
 @app.command("list")
-def list_entries(db_path: Path = typer.Option(Path("journal.json"), hidden=True)) -> None:
+def list_entries(
+    tags: list[str] = typer.Option([], help="Filter by tag (repeatable)"),
+    limit: int = typer.Option(0, help="Show last N entries (0 = all)"),
+    db_path: Path = typer.Option(Path("journal.json"), hidden=True),
+) -> None:
     entries = load_entries(db_path)
     if len(entries) == 0:
         print("No entries found.")
         return
-    for entry in entries:
-        print(f"Title: {entry.title}")
-        print(f"Content: {entry.content}")
-        print(f"Tags: {', '.join(entry.tags)}")
-        print(f"Date: {entry.date}")
-        print("---")
+
+    if tags:
+        filtered_entries = [
+            e for e in entries if any(match_query(e, tag) for tag in tags)
+        ]
+        if limit > 0:
+            filtered_entries = filtered_entries[-limit:]
+    elif limit > 0:
+        filtered_entries = entries[-limit:]
+    else:
+        filtered_entries = entries
+
+    for entry in filtered_entries:
+        _display(entry)
 
 
-def main():
-    print("Hello from dev-journal!")
+@app.command()
+def search(
+    query: str = typer.Argument(..., help="Search term"),
+    db_path: Path = typer.Option(Path("journal.json"), hidden=True),
+) -> None:
+    entries = load_entries(db_path)
+    found_entries = [e for e in entries if match_query(e, query)]
+    if found_entries:
+        for entry in found_entries:
+            _display(entry)
+    else:
+        print("No entries found.")
 
 
 if __name__ == "__main__":

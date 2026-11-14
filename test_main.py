@@ -11,6 +11,7 @@ from main import (
     add_entry,
     app,
     load_entries,
+    match_query,
     save_entries,
 )
 
@@ -111,7 +112,17 @@ def test_cli_add_with_flags(db_file, runner):
 def test_cli_add_invalid_title(db_file, runner):
     result = runner.invoke(
         app,
-        ["add", "--title", "", "--content", "Valid content", "--tags", "", "--db-path", str(db_file)],
+        [
+            "add",
+            "--title",
+            "",
+            "--content",
+            "Valid content",
+            "--tags",
+            "",
+            "--db-path",
+            str(db_file),
+        ],
     )
     assert result.exit_code != 0
 
@@ -129,3 +140,55 @@ def test_cli_list_empty(db_file, runner):
     result = runner.invoke(app, ["list", "--db-path", str(db_file)])
     assert result.exit_code == 0
     assert "no" in result.output.lower()
+
+
+def test_match_query_title():
+    entry = JournalEntry(title="Python Basics", content="Content", tags=["python"])
+    assert match_query(entry, "python")
+
+
+def test_match_query_case_insensitive():
+    entry = JournalEntry(title="PYTHON Basics", content="Content", tags=[])
+    assert match_query(entry, "python")
+
+
+def test_match_query_content_and_tags():
+    entry = JournalEntry(title="Entry", content="I love pytest", tags=["tooling"])
+    assert match_query(entry, "pytest")
+    assert match_query(entry, "tool")  # matches the tag
+    assert not match_query(entry, "nonexistent")
+
+
+def test_cli_search(db_file, runner):
+    add_entry("Python Tips", "Use list comprehensions", ["python"], db_file)
+    add_entry("Rust Guide", "Ownership model", ["rust"], db_file)
+    result = runner.invoke(app, ["search", "python", "--db-path", str(db_file)])
+    assert result.exit_code == 0
+    assert "Python Tips" in result.output
+    assert "Rust Guide" not in result.output
+
+
+def test_cli_search_no_results(db_file, runner):
+    add_entry("Entry", "Content", ["tag"], db_file)
+    result = runner.invoke(app, ["search", "nope", "--db-path", str(db_file)])
+    assert result.exit_code == 0
+    assert "no" in result.output.lower()
+
+
+def test_cli_list_with_tag(db_file, runner):
+    add_entry("Python Entry", "Content", ["python"], db_file)
+    add_entry("Rust Entry", "Content", ["rust"], db_file)
+    result = runner.invoke(app, ["list", "--tags", "python", "--db-path", str(db_file)])
+    assert result.exit_code == 0
+    assert "Python Entry" in result.output
+    assert "Rust Entry" not in result.output
+
+
+def test_cli_list_with_limit(db_file, runner):
+    for title in ("First", "Second", "Third"):
+        add_entry(title, "Content", [], db_file)
+    result = runner.invoke(app, ["list", "--limit", "2", "--db-path", str(db_file)])
+    assert result.exit_code == 0
+    assert "Third" in result.output
+    assert "Second" in result.output
+    assert "First" not in result.output
