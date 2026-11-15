@@ -7,6 +7,8 @@ from .models import JournalEntry
 
 app = typer.Typer()
 
+DEFAULT_DB_PATH = Path("journal.json")
+
 
 def _display(entry: JournalEntry) -> None:
     print(f"Title: {entry.title}")
@@ -21,7 +23,7 @@ def add(
     title: str = typer.Option("", prompt="Title", show_default=False),
     content: str = typer.Option("", prompt="Content", show_default=False),
     tags: str = typer.Option("", prompt="Tags", show_default=False),
-    db_path: Path = typer.Option(Path("journal.json"), hidden=True),
+    db_path: Path = typer.Option(DEFAULT_DB_PATH, hidden=True),
 ) -> None:
     tag_list = tags.split(",")
     db = JournalDatabase(db_path)
@@ -36,7 +38,7 @@ def add(
 def list_entries(
     tags: list[str] = typer.Option([], help="Filter by tag (repeatable)"),
     limit: int = typer.Option(0, help="Show last N entries (0 = all)"),
-    db_path: Path = typer.Option(Path("journal.json"), hidden=True),
+    db_path: Path = typer.Option(DEFAULT_DB_PATH, hidden=True),
 ) -> None:
     db = JournalDatabase(db_path)
     entries = db.load_entries()
@@ -62,7 +64,7 @@ def list_entries(
 @app.command()
 def search(
     query: str = typer.Argument(..., help="Search term"),
-    db_path: Path = typer.Option(Path("journal.json"), hidden=True),
+    db_path: Path = typer.Option(DEFAULT_DB_PATH, hidden=True),
 ) -> None:
     db = JournalDatabase(db_path)
     entries = db.load_entries()
