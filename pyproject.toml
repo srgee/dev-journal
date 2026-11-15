@@ -41,3 +41,9 @@ ignore = []
 minversion = "6.0"
 addopts = "-ra -q --cov=src --cov-report=term-missing"
 testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = [
+    "*/__init__.py",
+    "*/__main__.py",
+]
