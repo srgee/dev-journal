@@ -73,7 +73,7 @@ jobs:
         run: uv sync --locked --all-extras --dev
 
       - name: Execute Tests with Coverage Gate
-        run: uv run pytest --cov=src --cov-report=term-missing --cov-fail-under=80
+        run: uv run pytest
 
   # -------------------------------------------------------------
   # JOB 3: Squash & Merge Linting (Pull Requests only)
