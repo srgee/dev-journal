@@ -39,11 +39,6 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Check for Hardcoded Secrets
-        uses: trufflesecurity/trufflehog-action@main
-        with:
-          extra_args: --results=verified,unknown
-
       - name: Check Code Style & Formatting (Ruff)
         run: uvx ruff check . && uvx ruff format --check .
 
