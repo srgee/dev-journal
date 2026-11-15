@@ -14,6 +14,10 @@ class JournalEntry:
 
     def __post_init__(self):
         if not self.title or len(self.title) > MAX_TITLE_LENGTH:
-            raise ValueError(f"Title must be non-empty and <= {MAX_TITLE_LENGTH} characters")
+            raise ValueError(
+                f"Title must be non-empty and <= {MAX_TITLE_LENGTH} characters"
+            )
         if not self.content or len(self.content) > MAX_CONTENT_LENGTH:
-            raise ValueError(f"Content must be non-empty and <= {MAX_CONTENT_LENGTH} characters")
+            raise ValueError(
+                f"Content must be non-empty and <= {MAX_CONTENT_LENGTH} characters"
+            )

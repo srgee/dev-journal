@@ -26,13 +26,17 @@ class JournalDatabase:
         self.save_entries(entries)
 
     @staticmethod
-    def search_entries(entries: list[JournalEntry], query: str, titles_only: bool = False) -> list[JournalEntry]:
+    def search_entries(
+        entries: list[JournalEntry], query: str, titles_only: bool = False
+    ) -> list[JournalEntry]:
         result = []
         for e in entries:
             if query.lower() in e.title.lower():
                 result.append(e)
             elif titles_only:
                 continue
-            elif (query.lower() in e.content) or any(query.lower() in tag.lower() for tag in e.tags):
+            elif (query.lower() in e.content) or any(
+                query.lower() in tag.lower() for tag in e.tags
+            ):
                 result.append(e)
         return result

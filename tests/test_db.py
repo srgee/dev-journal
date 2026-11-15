@@ -29,7 +29,9 @@ def test_add_multiple_entries(db):
 def test_search_by_title(db):
     db.add_entry("Python Basics", "Content", ["python"])
     db.add_entry("Rust Intro", "Content", ["rust"])
-    results = JournalDatabase.search_entries(db.load_entries(), "python", titles_only=True)
+    results = JournalDatabase.search_entries(
+        db.load_entries(), "python", titles_only=True
+    )
     assert len(results) == 1
     assert results[0].title == "Python Basics"
 
